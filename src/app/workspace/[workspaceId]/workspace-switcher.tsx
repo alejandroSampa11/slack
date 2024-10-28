@@ -21,20 +21,12 @@ function WorkspaceSwitcher() {
     const [_open, setOpen] = useCreateWorkspaceModal();
     const { data: workspaces, isLoading: workspacesLoading } = useGetWorkspaces();
     const { data: workspace, isLoading: workspaceLoading } = useGetWorkspace({ id: workspaceId });
-    const [isClient, setIsClient] = useState(false);
 
     const filteredWorkspaces = workspaces?.filter((x) => x._id !== workspaceId);
 
-    useEffect(() => {
-        setIsClient(true);
-      }, []);
-
-    if (!isClient) {
-        return null;
-      }
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
                 <Button className="size-9 relative overflow-hidden bg-[#ABABAD] hover:bg-[#ABABAD]/80 text-slate-800 font-semibold text-xl">
                     {workspaceLoading ? (<Loader className="size-5 animate-spin shrink-0" />) : workspace?.name.charAt(0).toUpperCase()}
                 </Button>
