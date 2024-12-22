@@ -44,7 +44,6 @@ export const useCreateWorkspace =()=>{
             options?.onSettled?.();
         }
 
-        //TODO: 15:25 WORKSPACE PREFERENCE
     },[mutation])
     return {mutate, data, error, isPending, isSuccess, isError, isSettled}
 }
