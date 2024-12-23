@@ -1,4 +1,10 @@
-import { AlertTriangle, HashIcon, Loader, MessageSquareText, SendHorizonal } from "lucide-react";
+import {
+  AlertTriangle,
+  HashIcon,
+  Loader,
+  MessageSquareText,
+  SendHorizonal,
+} from "lucide-react";
 import useCurrentMember from "@/app/features/members/api/use-current-member";
 import { useGetWorkspace } from "@/app/features/workspaces/api/use-get-workspace";
 import { useGetChannels } from "@/app/features/channels/api/use-get-channels";
@@ -9,19 +15,25 @@ import WorkspaceSection from "./workspace-section";
 import useGetMembers from "@/app/features/members/api/use-get-members";
 import UserItem from "./user-item";
 import { useCreateChannelModal } from "@/app/features/channels/store/use-create-channel-modal";
+import useChannelId from "@/hooks/use-channel-id";
 
 function WorkspaceSideBar() {
   const workspaceId = useWorkspaceId();
+  const channelId = useChannelId();
   const [_open, setOpen] = useCreateChannelModal();
-  
+
   const { data: member, isLoading: memberLoading } = useCurrentMember({
     workspaceId,
   });
   const { data: workspace, isLoading: workspaceLoading } = useGetWorkspace({
     id: workspaceId,
   });
-  const { data: channels, isLoading: channelsLoading } = useGetChannels({ workspaceId })
-  const { data: members, isLoading: membersIsLoading} = useGetMembers({workspaceId})
+  const { data: channels, isLoading: channelsLoading } = useGetChannels({
+    workspaceId,
+  });
+  const { data: members, isLoading: membersIsLoading } = useGetMembers({
+    workspaceId,
+  });
 
   if (workspaceLoading || memberLoading) {
     return (
@@ -50,17 +62,35 @@ function WorkspaceSideBar() {
         <SidebarItem label="Threads" icon={MessageSquareText} id="threads" />
         <SidebarItem label="Drafts & Sent" icon={SendHorizonal} id="drafts" />
       </div>
-      <WorkspaceSection label="Channels" hint="New Channel" onNew={member.role === 'admin' ? () => setOpen(true) : undefined}>
+      <WorkspaceSection
+        label="Channels"
+        hint="New Channel"
+        onNew={member.role === "admin" ? () => setOpen(true) : undefined}
+      >
         {channels?.map((x) => (
-          <SidebarItem key={x._id} label={x.name} icon={HashIcon} id={x.name} />
+          <SidebarItem 
+            key={x._id} 
+            label={x.name} 
+            icon={HashIcon} 
+            id={x._id} 
+            variant={channelId == x._id ? "active" : "default"}
+            />
         ))}
       </WorkspaceSection>
-      <WorkspaceSection label="Direct Messages" hint="New Direct Message" onNew={() => { }}>
-      {members?.map((item) => (
-        <UserItem key={item._id} id={item._id} label={item.user.name} image={item.user.image}/>
-      ))}
+      <WorkspaceSection
+        label="Direct Messages"
+        hint="New Direct Message"
+        onNew={() => {}}
+      >
+        {members?.map((item) => (
+          <UserItem
+            key={item._id}
+            id={item._id}
+            label={item.user.name}
+            image={item.user.image}
+          />
+        ))}
       </WorkspaceSection>
-
     </div>
   );
 }
