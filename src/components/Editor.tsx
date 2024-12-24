@@ -4,10 +4,11 @@ import { Delta, Op } from 'quill/core';
 import "quill/dist/quill.snow.css";
 import { Button } from './ui/button';
 import { PiTextAa } from 'react-icons/pi'
-import { ImageIcon, Smile, SendHorizonal } from 'lucide-react';
+import { ImageIcon, Smile, SendHorizonal, XIcon } from 'lucide-react';
 import Hint from './hint';
 import { cn } from '@/lib/utils';
 import EmojiPopover from './emoji-popover';
+import Image from 'next/image';
 
 type EditorValue = {
     image: File | null;
@@ -27,6 +28,7 @@ interface EditorProps {
 function Editor({ onCancel, placeholder = "Write Something...", defaultValue = [], disabled = false, innerRef, onSubmit, variant = "create" }: EditorProps) {
 
     const [text, setText] = useState("");
+    const [image, setImage] = useState<File | null>(null);
     const [isToolbarVisible, setIsToolbarVisible] = useState(true);
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -36,6 +38,7 @@ function Editor({ onCancel, placeholder = "Write Something...", defaultValue = [
     const quillRef = useRef<Quill | null>(null);
     const defaultValueRef = useRef(defaultValue);
     const disabledRef = useRef(disabled);
+    const imageElementRef = useRef<HTMLInputElement>(null);
 
     useLayoutEffect(() => {
         submitRef.current = onSubmit;
@@ -120,7 +123,7 @@ function Editor({ onCancel, placeholder = "Write Something...", defaultValue = [
         }
     }
 
-    const onEmojiSelect = (emoji: any) =>{
+    const onEmojiSelect = (emoji: any) => {
         const quill = quillRef.current;
         quill?.insertText(quill?.getSelection()?.index || 0, emoji.native);
     }
@@ -129,8 +132,31 @@ function Editor({ onCancel, placeholder = "Write Something...", defaultValue = [
 
     return (
         <div className='flex flex-col'>
+            <input type='file' accept='image/*' ref={imageElementRef} onChange={(event) => setImage(event.target.files![0])} className='hidden' />
             <div className='flex flex-col border border-slate-200 rounded-md overflow-hidden focus-within:border-slate-300 focus-within:shadow-sm transition bg-white'>
                 <div className='h-full ql-custom' ref={containerRef} />
+                {!!image && (
+                    <div className='p-2'>
+                        <div className='relative size-[62px] flex items-center justify-center group/image'>
+                            <Hint label='Remove Image'>
+                                <button onClick={() => {
+                                    setImage(null)
+                                    imageElementRef.current!.value = '';
+                                }}
+                                    className='hidden group-hover/image:flex rounded-full bg-black/70 hover:bg-black absolute -top-2.5 -right-2.5 text-white size-6 z-[4] border-white items-center justify-center'
+                                >
+                                    <XIcon className='size-3.5' />
+                                </button>
+                                <Image
+                                    src={URL.createObjectURL(image)}
+                                    alt="Uploaded"
+                                    fill
+                                    className='rounded-xl overflow-hidden border object-cover'
+                                />
+                            </Hint>
+                        </div>
+                    </div>
+                )}
                 <div className='flex px-2 pb-2 z-[5]'>
                     <Hint label={isToolbarVisible ? 'Hide Formatting' : "Show Formatting"}>
                         <Button disabled={disabled} size={"iconSm"} variant={"ghost"} onClick={toogleToolBar}>
@@ -144,7 +170,7 @@ function Editor({ onCancel, placeholder = "Write Something...", defaultValue = [
                     </EmojiPopover>
                     {variant === 'create' && (
                         <Hint label='Image'>
-                            <Button disabled={disabled} size={"iconSm"} variant={"ghost"} onClick={() => { }}>
+                            <Button disabled={disabled} size={"iconSm"} variant={"ghost"} onClick={() => imageElementRef.current?.click()}>
                                 <ImageIcon className='size-4' />
                             </Button>
                         </Hint>
@@ -171,7 +197,7 @@ function Editor({ onCancel, placeholder = "Write Something...", defaultValue = [
             </div>
             {variant === 'create' && (
 
-                <div className={cn('p-2 text-[10px] text-muted-foreground flex justify-end opacity-0 transition', !isEmpty && "opacity-100" )}>
+                <div className={cn('p-2 text-[10px] text-muted-foreground flex justify-end opacity-0 transition', !isEmpty && "opacity-100")}>
                     <p>
                         <strong>Shift + Return</strong> to add a new line
                     </p>
