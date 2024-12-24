@@ -5,9 +5,9 @@ import { useCreateChannelModal } from "@/app/features/channels/store/use-create-
 import useCurrentMember from "@/app/features/members/api/use-current-member";
 import { useGetWorkspace } from "@/app/features/workspaces/api/use-get-workspace";
 import useWorkspaceId from "@/hooks/use-workspace-id"
-import { Loader, Triangle, TriangleAlert } from "lucide-react";
+import { Loader, TriangleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 export default function WorkspaceIdPage() {
   const workspaceId = useWorkspaceId();
@@ -31,7 +31,7 @@ export default function WorkspaceIdPage() {
     }
   },[member, memberLoading, isAdmin, channelId, workspaceLoading, channelsLoading, workspace, open, setOpen, router, workspaceId]);
 
-  if(workspaceLoading || channelsLoading){
+  if(workspaceLoading || channelsLoading || memberLoading){
     return (
       <div className="h-full flex-1 flex items-center justify-center flex-col gap-2">
         <Loader className="size-6 animate-spin text-muted-foreground"/>
@@ -39,7 +39,7 @@ export default function WorkspaceIdPage() {
     );
   }
 
-  if(!workspace){
+  if(!workspace || !member){
     return (
       <div className="h-full flex-1 flex items-center justify-center flex-col gap-2">
         <TriangleAlert className="size-6 text-muted-foreground"/>
@@ -55,5 +55,3 @@ export default function WorkspaceIdPage() {
     </div>
   );
 };
-
-//TODO: 10:10 CHANNEL PAGE
