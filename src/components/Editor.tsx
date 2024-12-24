@@ -1,12 +1,13 @@
 import React, { MutableRefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Quill, { QuillOptions } from 'quill';
-import {Delta, Op} from 'quill/core';
+import { Delta, Op } from 'quill/core';
 import "quill/dist/quill.snow.css";
 import { Button } from './ui/button';
 import { PiTextAa } from 'react-icons/pi'
 import { ImageIcon, Smile, SendHorizonal } from 'lucide-react';
 import Hint from './hint';
 import { cn } from '@/lib/utils';
+import EmojiPopover from './emoji-popover';
 
 type EditorValue = {
     image: File | null;
@@ -14,8 +15,8 @@ type EditorValue = {
 }
 
 interface EditorProps {
-    onSubmit: ({image, body} : EditorValue) => void;
-    onCancel?: ()=> void;
+    onSubmit: ({ image, body }: EditorValue) => void;
+    onCancel?: () => void;
     placeholder?: string;
     defaultValue: Delta | Op[];
     disabled?: boolean;
@@ -23,20 +24,20 @@ interface EditorProps {
     variant?: "create" | "update";
 }
 
-function Editor({onCancel, placeholder = "Write Something...", defaultValue = [], disabled = false, innerRef, onSubmit, variant = "create" }: EditorProps) {
-    
+function Editor({ onCancel, placeholder = "Write Something...", defaultValue = [], disabled = false, innerRef, onSubmit, variant = "create" }: EditorProps) {
+
     const [text, setText] = useState("");
     const [isToolbarVisible, setIsToolbarVisible] = useState(true);
 
     const containerRef = useRef<HTMLDivElement>(null);
-    const submitRef= useRef(onSubmit);
+    const submitRef = useRef(onSubmit);
     const placeholderRef = useRef(placeholder);
     const cancelRef = useRef(onCancel);
     const quillRef = useRef<Quill | null>(null);
     const defaultValueRef = useRef(defaultValue);
     const disabledRef = useRef(disabled);
 
-    useLayoutEffect(()=>{
+    useLayoutEffect(() => {
         submitRef.current = onSubmit;
         placeholderRef.current = placeholder;
         defaultValueRef.current = defaultValue;
@@ -54,72 +55,78 @@ function Editor({onCancel, placeholder = "Write Something...", defaultValue = []
             theme: "snow",
             placeholder: placeholderRef.current,
             modules: {
-                toolbar:[
-                    ['bold', 'italic','strike'],
+                toolbar: [
+                    ['bold', 'italic', 'strike'],
                     ['link'],
-                    [{list: 'ordered'}, {list: 'bullet'}]
+                    [{ list: 'ordered' }, { list: 'bullet' }]
                 ],
                 keyboard: {
-                    bindings:{
-                        enter:{
+                    bindings: {
+                        enter: {
                             key: "Enter",
-                            handler: ()=>{
+                            handler: () => {
                                 //TODO: SUBMIT FIRM
                                 return;
                             }
                         },
-                        shift_enter:{
+                        shift_enter: {
                             key: "Enter",
                             shiftKey: true,
-                            handler: ()=>{
+                            handler: () => {
                                 quill.insertText(quill.getSelection()?.index || 0, "\n")
                             }
                         }
                     }
                 }
             },
-            
+
         };
 
         const quill = new Quill(editorContainer, options);
         quillRef.current = quill;
         quillRef.current.focus();
 
-        if(innerRef){
+        if (innerRef) {
             innerRef.current = quill;
         }
 
         quill.setContents(defaultValueRef.current);
         setText(quill.getText());
-        quill.on(Quill.events.TEXT_CHANGE, ()=>{
+        quill.on(Quill.events.TEXT_CHANGE, () => {
             setText(quill.getText());
         })
-        
+
         return () => {
             quill.off(Quill.events.TEXT_CHANGE)
             if (container) {
                 container.innerHTML = "";
             }
-            if(quillRef.current){
+            if (quillRef.current) {
                 quillRef.current = null;
             }
-            if(innerRef){
+            if (innerRef) {
                 innerRef.current = null;
             }
         }
-        
+
     }, [innerRef]);
 
-    const toogleToolBar = ()=>{
-        setIsToolbarVisible((current)=> !current);
+    const toogleToolBar = () => {
+        setIsToolbarVisible((current) => !current);
         const toolbarElement = containerRef.current?.querySelector('.ql-toolbar');
 
-        if(toolbarElement){
+        if (toolbarElement) {
             toolbarElement.classList.toggle("hidden");
         }
     }
-    const isEmpty = text.replace(/<(.|\n)*?>/g,"").trim().length === 0;
-    
+
+    const onEmojiSelect = (emoji: any) =>{
+        const quill = quillRef.current;
+        quill?.insertText(quill?.getSelection()?.index || 0, emoji.native);
+    }
+
+    const isEmpty = text.replace(/<(.|\n)*?>/g, "").trim().length === 0;
+
     return (
         <div className='flex flex-col'>
             <div className='flex flex-col border border-slate-200 rounded-md overflow-hidden focus-within:border-slate-300 focus-within:shadow-sm transition bg-white'>
@@ -130,11 +137,11 @@ function Editor({onCancel, placeholder = "Write Something...", defaultValue = []
                             <PiTextAa className='size-4' />
                         </Button>
                     </Hint>
-                    <Hint label='Emoji'>
-                        <Button disabled={disabled} size={"iconSm"} variant={"ghost"} onClick={() => { }}>
+                    <EmojiPopover onEmojiSelect={onEmojiSelect}>
+                        <Button disabled={disabled} size={"iconSm"} variant={"ghost"}>
                             <Smile className='size-4' />
                         </Button>
-                    </Hint>
+                    </EmojiPopover>
                     {variant === 'create' && (
                         <Hint label='Image'>
                             <Button disabled={disabled} size={"iconSm"} variant={"ghost"} onClick={() => { }}>
@@ -144,17 +151,17 @@ function Editor({onCancel, placeholder = "Write Something...", defaultValue = []
                     )}
                     {variant === 'update' && (
                         <div className='ml-auto flex items-center gap-x-2'>
-                            <Button variant='outline' size="sm" onClick={()=>{}} disabled={disabled}>
+                            <Button variant='outline' size="sm" onClick={() => { }} disabled={disabled}>
                                 Cancel
                             </Button>
-                            <Button disabled={disabled || isEmpty} onClick={()=>{}} size='sm' className=' bg-[#007a5a] hover:bg-[#007a5a]/80 text-white'>
+                            <Button disabled={disabled || isEmpty} onClick={() => { }} size='sm' className=' bg-[#007a5a] hover:bg-[#007a5a]/80 text-white'>
                                 Save
                             </Button>
                         </div>
                     )}
                     {variant === 'create' && (
                         <Hint label='Sent Message'>
-                            <Button disabled={disabled || isEmpty} onClick={() => { }} size={"sm"} className={cn('ml-auto',isEmpty ? ' bg-white hover:bg-white text-muted-foreground' : 'bg-[#007a5a] hover:bg-[#007a5a]/80 text-white')}>
+                            <Button disabled={disabled || isEmpty} onClick={() => { }} size={"sm"} className={cn('ml-auto', isEmpty ? ' bg-white hover:bg-white text-muted-foreground' : 'bg-[#007a5a] hover:bg-[#007a5a]/80 text-white')}>
                                 <SendHorizonal className='size-4' />
                             </Button>
                         </Hint>
@@ -162,11 +169,14 @@ function Editor({onCancel, placeholder = "Write Something...", defaultValue = []
 
                 </div>
             </div>
-            <div className='p-2 text-[10px] text-muted-foreground flex justify-end'>
-                <p>
-                    <strong>Shift + Return</strong> to add a new line
-                </p>
-            </div>
+            {variant === 'create' && (
+
+                <div className={cn('p-2 text-[10px] text-muted-foreground flex justify-end opacity-0 transition', !isEmpty && "opacity-100" )}>
+                    <p>
+                        <strong>Shift + Return</strong> to add a new line
+                    </p>
+                </div>
+            )}
         </div>
     )
 }
