@@ -8,7 +8,7 @@ import EmojiPopover from './emoji-popover';
 interface ToolbarProps {
     isAuthor: boolean;
     isPending: boolean;
-    handleEdit: (id: Id<"messages"> | null) => void;
+    handleEdit: () => void;
     handleThread: () => void;
     handleDelete: () => void;
     handleReaction: (value: string) => void
@@ -37,6 +37,7 @@ function Toolbar({ isAuthor, isPending, handleEdit, handleThread, handleDelete, 
                             variant="ghost"
                             size="iconSm"
                             disabled={isPending}
+                            onClick={handleThread}
                         >
                             <MessageSquareText className='size-4' />
                         </Button>
@@ -46,6 +47,7 @@ function Toolbar({ isAuthor, isPending, handleEdit, handleThread, handleDelete, 
                     <>
                         <Hint label='Edit Message'>
                             <Button
+                                onClick={handleEdit}
                                 variant="ghost"
                                 size="iconSm"
                                 disabled={isPending}
@@ -58,6 +60,7 @@ function Toolbar({ isAuthor, isPending, handleEdit, handleThread, handleDelete, 
                                 variant="ghost"
                                 size="iconSm"
                                 disabled={isPending}
+                                onClick={handleDelete}
                             >
                                 <Trash className='size-4' />
                             </Button>
