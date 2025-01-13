@@ -6,7 +6,6 @@ import { Loader, TriangleAlert } from "lucide-react";
 import Header from "./Header";
 import ChatInput from "./ChatInput";
 import UseGetMessages from "@/app/features/messages/api/use-get-messages";
-import { stat } from "fs";
 import MessageList from "@/components/message-list";
 
 function ChannelIdPage() {
@@ -15,8 +14,6 @@ function ChannelIdPage() {
 
   const {results, status, loadMore} = UseGetMessages({channelId})
   const {data: channel, isLoading: channelLoading} = useGetChannel({id:channelId});
-
-  console.log(results)
 
   if(channelLoading || status === 'LoadingFirstPage'){
     return (
